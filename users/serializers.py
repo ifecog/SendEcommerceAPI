@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
         try:
             name = obj.first_name + ' ' + obj.last_name
             if name == '':
-                return obj.email
+                name = obj.email
         except:
             pass
         
@@ -35,7 +35,7 @@ class UserSerializerWithToken(UserSerializer):
     
     class Meta:
         model = get_user_model()
-        fields = ['uuid', 'email', 'token']
+        fields = ['uuid', 'email', 'name', 'token', 'isAdmin']
         
     def get_token(self, obj):
         token = RefreshToken.for_user(obj)
@@ -43,7 +43,7 @@ class UserSerializerWithToken(UserSerializer):
         return str(token.access_token)
     
     
-class LoginSerializer(TokenObtainPairSerializer):
+class SigninSerializer(TokenObtainPairSerializer):
     token_class = RefreshToken
     
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, str]:
