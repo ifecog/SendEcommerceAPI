@@ -35,6 +35,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
 INSTALLED_APPS = [
     # Project apps
     'users.apps.UsersConfig',
+    'base.apps.BaseConfig',
     
     'django.contrib.admin',
     'django.contrib.auth',
