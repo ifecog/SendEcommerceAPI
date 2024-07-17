@@ -21,7 +21,7 @@ paypalrestsdk.configure({
 })
 
 
-@api_view('GET')
+@api_view(['GET'])
 @permission_classes([IsAdminUser])
 def get_orders(request):
     orders = Order.objects.all().order_by('-created_time')

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import (
-    Category, Tag, Brand, Product, Order, OrderItem, ShippingAddress
+    Category, Tag, Brand, Product, Order, OrderItem, ShippingAddress, Review
 )
 
 # Register your models here.
@@ -38,6 +38,10 @@ class ShippingAddressAdmin(admin.ModelAdmin):
     list_display = ['city', 'state', 'address']
 
 
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ['user', 'product', 'rating']
+
+
 
 
 admin.site.register(Product, ProductAdmin)
@@ -47,3 +51,4 @@ admin.site.register(Brand)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(ShippingAddress, ShippingAddressAdmin)
+admin.site.register(Review, ReviewAdmin)

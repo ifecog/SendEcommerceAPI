@@ -8,6 +8,7 @@ from .models import (
     Order,
     OrderItem,
     ShippingAddress,
+    Review
 )
 
 from users.serializers import UserSerializer
@@ -29,17 +30,32 @@ class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         fields = ['name']
+        
+
+class ReviewSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Review
+        fields = '__all__'        
+
 
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     brand = BrandSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    reviews = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = Product
         fields = [
-            'uuid', 'name', 'image_a', 'image_b', 'image_c', 'image_d', 'description', 'price', 'discount_price', 'rating', 'num_of_reviews', 'count_in_stock', 'category', 'brand', 'tags', 'related_products'
+            'uuid', 'name', 'image_a', 'image_b', 'image_c', 'image_d', 'description', 'price', 'discount_price', 'rating', 'num_of_reviews', 'count_in_stock', 'category', 'brand', 'tags', 'related_products', 'reviews'
         ]
+        
+    def get_reviews(self, obj):
+        reviews = obj.review_set.all()
+        serializer = ReviewSerializer(reviews, many=True)
+        
+        return serializer.data
         
 
 class OrderItemSerializer(serializers.ModelSerializer):
