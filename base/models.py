@@ -77,6 +77,7 @@ class Order(models.Model):
     payment_time = models.DateTimeField(auto_now_add=False, null=True, blank=True)
     is_delivered = models.BooleanField(default=False)
     delivery_time = models.DateTimeField(auto_now_add=False, null=True, blank=True)    
+    paypal_payment_id = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return str(self.created_time)
@@ -141,11 +142,14 @@ class ShippingAddress(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, null=True, blank=True)
     state = models.CharField(max_length=200, choices=NIGERIAN_STATES, null=True, blank=True)
     city = models.CharField(max_length=200, null=True, blank=True)
-    address = models.CharField(max_length=200, null=True, blank=True)
+    address = models.CharField(max_length=500, null=True, blank=True)
+    address_note = models.CharField(max_length=200, null=True, blank=True)
     postal_code = models.CharField(max_length=200, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     def __str__(self):
-        return self.address
+        return self.address or 'No Address Provided'
 
     class Meta:
         verbose_name = 'shipping address'
