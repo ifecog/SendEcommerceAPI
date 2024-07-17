@@ -7,7 +7,7 @@ import paypalrestsdk
 from paypalrestsdk import Payment
 
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -19,6 +19,16 @@ paypalrestsdk.configure({
     "client_id": settings.PAYPAL_CLIENT_ID,
     "client_secret": settings.PAYPAL_CLIENT_SECRET
 })
+
+
+@api_view('GET')
+@permission_classes([IsAdminUser])
+def get_orders(request):
+    orders = Order.objects.all().order_by('-created_time')
+    serializer = OrderSerializer(orders, many=True)
+    
+    return Response(serializer.data)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -76,8 +86,8 @@ def add_order_items(request):
                 "payment_method": "paypal"
             },
             "redirect_urls": {
-                "return_url": "http://localhost:8000/paypal-return",  # Update this with your return URL
-                "cancel_url": "http://localhost:8000/paypal-cancel"   # Update this with your cancel URL
+                "return_url": "http://localhost:8000/api/orders/paypal_return",  # Update this with your return URL
+                "cancel_url": "http://localhost:8000/api/orders/paypal-cancel"   # Update this with your cancel URL
             },
             "transactions": [{
                 "item_list": {
@@ -136,3 +146,13 @@ def paypal_return(request):
 @permission_classes([IsAuthenticated])
 def paypal_cancel(request):
     return Response({'status': 'Payment cancelled!'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_orders(request):
+    user = request.user
+    orders = user.order_set.all()
+    serializer = OrderSerializer(orders, many=True)
+    
+    return Response(serializer.data)
