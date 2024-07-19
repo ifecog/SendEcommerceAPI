@@ -4,11 +4,15 @@ from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 from .views import (
     SigninView,
     signup,
+    get_user_details,
+    update_user_profile,
 )
 
 urlpatterns = [
     path('signin/', SigninView.as_view(), name='user-signin'),
     path('signup/', signup, name='user-signup'),
+    path('<uuid:uuid>/', get_user_details, name='user-details'),
+    path('profile/update/', update_user_profile, 'update-user-profile'),
     
     # Token refresh/verify
     path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),

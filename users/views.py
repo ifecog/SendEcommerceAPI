@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import make_password
+from django.shortcuts import render, get_object_or_404
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -47,3 +48,30 @@ def signup(request):
         message = {'detail', str(e)}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
     
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_user_details(request, uuid):
+    user = get_object_or_404(User, uuid=uuid)
+    serializer = UserSerializer(user)
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user_profile(request):
+    user = request.user
+    data = request.data
+    serializer = UserSerializerWithToken(user, many=False)
+    
+    user.first_name = data['first_name']
+    user.last_name = data['last_name']
+    user.email = data['email']
+    user.phone_number = data['phone_number']
+    
+    if data['password'] != '':
+        user.password = make_password(data['password'])
+
+    user.save()
+    
+    return Response(serializer.data)
