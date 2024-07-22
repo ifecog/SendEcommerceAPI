@@ -47,6 +47,15 @@ def signup(request):
     except Exception as e:
         message = {'detail', str(e)}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_users(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+
+    return Response(serializer.data)
     
 
 @api_view(['PUT'])
