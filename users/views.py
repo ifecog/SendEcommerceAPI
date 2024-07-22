@@ -33,7 +33,7 @@ def signup(request):
         return Response({'detail': 'User with phonenumber already exists!'}, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        user = User.objects.create_user(
+        user = User.objects.create(
             first_name=data.get('first_name', ''),
             last_name=data.get('last_name', ''),
             email=data['email'],
@@ -48,14 +48,6 @@ def signup(request):
         message = {'detail', str(e)}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
     
-
-@api_view(['GET'])
-@permission_classes([IsAdminUser])
-def get_user_details(request, uuid):
-    user = get_object_or_404(User, uuid=uuid)
-    serializer = UserSerializer(user)
-    return Response(serializer.data)
-
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -75,3 +67,39 @@ def update_user_profile(request):
     user.save()
     
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_user_by_id(request, uuid):
+    user = get_object_or_404(User, uuid=uuid)
+    serializer = UserSerializer(user)
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def update_user(request, uuid):
+    user = get_object_or_404(User, uuid=uuid)
+
+    data = request.data
+
+    user.first_name = data['first_name']
+    user.last_name = data['last_name']
+    user.email = data['email']
+    user.phone_number = data['phone_number']
+    user.is_staff = data['isAdmin']
+
+    user.save()
+
+    serializer = UserSerializer(user, many=False)
+
+    return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_user(request, uuid):
+    user = get_object_or_404(User, uuid=uuid)
+    user.delete()
+    return Response('User Deleted!')

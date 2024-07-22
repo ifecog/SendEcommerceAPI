@@ -47,6 +47,7 @@ def get_product_details(request, uuid):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_product_review(request, uuid):
     user = request.user
     product = get_object_or_404(Product, uuid=uuid)
@@ -55,7 +56,7 @@ def create_product_review(request, uuid):
     # 1. Review already exist bu user
     already_exists = product.review_set.filter(user=user).exists()
     if already_exists:
-        return Response({'detail': 'Product reviewed already by user!'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'detail': 'Product already reviewed by user!'}, status=status.HTTP_403_FORBIDDEN)
     
     # 2. No rating or 0 rating
     elif data['rating'] == 0:
@@ -68,7 +69,7 @@ def create_product_review(request, uuid):
             product=product,
             name=user.first_name,
             rating=data['rating'],
-            commenr=data['comment']
+            comment=data['comment']
         )
         
         reviews = product.review_set.all()
