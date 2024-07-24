@@ -33,6 +33,12 @@ class Brand(models.Model):
         return self.name
 
 class Product(models.Model):
+    SIZE_CHOICES = [
+        ('small', 'Small'),
+        ('medium', 'Medium'),
+        ('large', 'Large'),
+    ]
+
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=200)
@@ -55,6 +61,10 @@ class Product(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
     related_products = models.ManyToManyField('self', blank=True)
+
+    # New fields for send24
+    is_fragile = models.BooleanField(default=False)
+    size = models.CharField(max_length=6, choices=SIZE_CHOICES, default='medium')
 
     def __str__(self):
         return self.name
