@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 from .views import (
     SigninView,
     signup,
-    get_users
+    get_users,
     update_user_profile,
     get_user_by_id,
     update_user,

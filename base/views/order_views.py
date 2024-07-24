@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 import paypalrestsdk
 from paypalrestsdk import Payment
@@ -71,58 +72,67 @@ def add_order_items(request):
             name=product.name,
             qty=item_data['qty'],
             price=item_data['price'],
-            image=product.image.url
+            image=product.image_a.url
         )
 
         # 4. Update stock
         product.count_in_stock -= item.qty
         product.save()
     
-    # 5. Create PayPal payment if the payment method is PayPal
-    if data['paymentMethod'] == 'PayPal':
-        payment = Payment({
-            "intent": "sale",
-            "payer": {
-                "payment_method": "paypal"
-            },
-            "redirect_urls": {
-                "return_url": "http://localhost:8000/api/orders/paypal_return",  # Update this with your return URL
-                "cancel_url": "http://localhost:8000/api/orders/paypal-cancel"   # Update this with your cancel URL
-            },
-            "transactions": [{
-                "item_list": {
-                    "items": [{
-                        "name": "Order {}".format(order.uuid),
-                        "sku": str(order.uuid),
-                        "price": str(order.total_price),
-                        "currency": "USD",
-                        "quantity": 1
-                    }]
-                },
-                "amount": {
-                    "total": str(order.total_price),
-                    "currency": "USD"
-                },
-                "description": "Payment for order {}".format(order.uuid)
-            }]
-        })
 
-        if payment.create():
-            for link in payment['links']:
-                if link['rel'] == 'approval_url':
-                    approval_url = str(link['href'])
-                    serializer = OrderSerializer(order, many=False)
-                    return Response({'order': serializer.data, 'approval_url': approval_url}, status=status.HTTP_201_CREATED)
-        else:
-            order.delete()  # Clean up the created order if PayPal payment fails
-            return Response(payment.error, status=status.HTTP_400_BAD_REQUEST)
+    serializer = OrderSerializer(order, many=False)
+    
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_paypal_payment(request, uuid):
+    user = request.user
+    order = get_object_or_404(Order, uuid=uuid, user=user)
+
+    if order.payment_method != 'PayPal':
+        return Response({'detail': 'Invalid payment method'}, status=status.HTTP_400_BAD_REQUEST)
+
+    payment = Payment({
+        "intent": "sale",
+        "payer": {
+            "payment_method": "paypal"
+        },
+        "redirect_urls": {
+            "return_url": f"http://localhost:3000/paypal_return?order_uuid={order.uuid}",  # Update this with your return URL
+            "cancel_url": "http://localhost:8000/api/orders/paypal-cancel"   # Update this with your cancel URL
+        },
+        "transactions": [{
+            "item_list": {
+                "items": [{
+                    "name": "Order {}".format(order.uuid),
+                    "sku": str(order.uuid),
+                    "price": str(order.total_price),
+                    "currency": "USD",
+                    "quantity": 1
+                }]
+            },
+            "amount": {
+                "total": str(order.total_price),
+                "currency": "USD"
+            },
+            "description": "Payment for order {}".format(order.uuid)
+        }]
+    })
+
+    if payment.create():
+        for link in payment['links']:
+            if link['rel'] == 'approval_url':
+                approval_url = str(link['href'])
+                serializer = OrderSerializer(order, many=False)
+                return Response({'order': serializer.data, 'approval_url': approval_url}, status=status.HTTP_201_CREATED)
     else:
-        serializer = OrderSerializer(order, many=False)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+        return Response(payment.error, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def paypal_return(request):
     payment_id = request.GET.get('paymentId')
     payer_id = request.GET.get('PayerID')
@@ -156,3 +166,35 @@ def get_my_orders(request):
     serializer = OrderSerializer(orders, many=True)
     
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_order_by_id(request, uuid):
+    user = request.user
+    order = Order.objects.get(uuid=uuid)
+    
+    try:
+        if user.is_staff or order.user == user:
+            serializer = OrderSerializer(order, many=False)
+            return Response(serializer.data)
+        
+        else:
+           message = {'detail': 'Not authorized to view this order'}
+           return Response(message, status=status.HTTP_400_BAD_REQUEST) 
+    except :
+        message = {'detail': 'Order does not exist'}
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_order_to_delivered(request, uuid):
+    order = get_object_or_404(Order, uuid=uuid)
+
+    order.is_delivered = True
+    order.delivery_time = datetime.now()
+    order.save()
+
+    return Response('Order was Delivered')
