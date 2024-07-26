@@ -34,9 +34,9 @@ class Brand(models.Model):
 
 class Product(models.Model):
     SIZE_CHOICES = [
-        ('small', 'Small'),
-        ('medium', 'Medium'),
-        ('large', 'Large'),
+        ('Small', 'Small'),
+        ('Medium', 'Medium'),
+        ('Large', 'Large'),
     ]
 
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -64,7 +64,7 @@ class Product(models.Model):
 
     # New fields for send24
     is_fragile = models.BooleanField(default=False)
-    size = models.CharField(max_length=6, choices=SIZE_CHOICES, default='medium')
+    size = models.CharField(max_length=6, choices=SIZE_CHOICES, default='Medium')
 
     def __str__(self):
         return self.name
