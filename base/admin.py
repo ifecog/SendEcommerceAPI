@@ -24,7 +24,8 @@ class TagAdmin(admin.ModelAdmin):
     
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['uuid', 'total_price', 'is_paid', 'is_delivered']
+    list_display = ['uuid', 'total_price', 'is_paid', 'payment_time', 'is_delivered', 'delivery_time']
+    ordering = ['-created_time'] 
 
 class OrderItemAdmin(admin.ModelAdmin):
     def thumbnail(self, object):
