@@ -19,4 +19,5 @@ urlpatterns = [
     path('paypal_return/', paypal_return, name='paypal-return'),
     path('paypal_cancel/', paypal_cancel, name='paypal-cancel'),
     path('<uuid:uuid>/deliver/', update_order_to_delivered, name='update-delivery'),
+    path('<uuid:uuid>/dispatch/', update_order_to_dispatch, name='update-dispatch'),
 ]

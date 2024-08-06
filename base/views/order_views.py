@@ -198,3 +198,19 @@ def update_order_to_delivered(request, uuid):
     order.save()
 
     return Response('Order was Delivered')
+
+
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def update_order_to_dispatch(request, uuid):
+    order = get_object_or_404(Order, uuid=uuid)
+
+    order.is_available_for_dispatch = True
+    order.dispatch_time = datetime.now()
+    order.save()
+
+    return Response('Order available for dispatch')
+
+
+    

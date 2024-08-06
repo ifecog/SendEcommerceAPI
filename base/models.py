@@ -101,6 +101,9 @@ class Order(models.Model):
     is_delivered = models.BooleanField(default=False)
     delivery_time = models.DateTimeField(auto_now_add=False, null=True, blank=True)    
     paypal_payment_id = models.CharField(max_length=200, null=True, blank=True)
+    is_available_for_dispatch = models.BooleanField(default=False)
+    dispatch_time = models.DateTimeField(auto_now_add=False, null=True, blank=True)    
+
 
     def __str__(self):
         return str(self.created_time)
